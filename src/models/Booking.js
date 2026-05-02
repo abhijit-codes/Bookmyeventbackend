@@ -1,0 +1,37 @@
+import { DataTypes } from "sequelize"
+import { sequelize } from "../config/database.js"
+
+export const Booking = sequelize.define("Booking", {
+  id: { type: DataTypes.BIGINT.UNSIGNED, autoIncrement: true, primaryKey: true },
+  booking_number: { type: DataTypes.STRING(40), allowNull: false, unique: true },
+  user_id: { type: DataTypes.BIGINT.UNSIGNED, allowNull: false },
+  vendor_id: { type: DataTypes.BIGINT.UNSIGNED, allowNull: false },
+  vendor_service_id: { type: DataTypes.BIGINT.UNSIGNED, allowNull: false },
+  event_date: { type: DataTypes.DATEONLY, allowNull: false },
+  event_time: { type: DataTypes.TIME },
+  event_address: { type: DataTypes.STRING, allowNull: false },
+  event_city: { type: DataTypes.STRING(100) },
+  event_state: { type: DataTypes.STRING(100) },
+  event_pincode: { type: DataTypes.STRING(12) },
+  event_latitude: { type: DataTypes.DECIMAL(10, 8) },
+  event_longitude: { type: DataTypes.DECIMAL(11, 8) },
+  notes: { type: DataTypes.TEXT },
+  service_amount: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
+  vendor_base_amount: { type: DataTypes.DECIMAL(12, 2), defaultValue: 0 },
+  advance_amount: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
+  platform_fee: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
+  vendor_commission_percent: { type: DataTypes.DECIMAL(5, 2), defaultValue: 0 },
+  vendor_commission_amount: { type: DataTypes.DECIMAL(12, 2), defaultValue: 0 },
+  customer_service_charge_percent: { type: DataTypes.DECIMAL(5, 2), defaultValue: 0 },
+  customer_service_charge: { type: DataTypes.DECIMAL(12, 2), defaultValue: 0 },
+  admin_commission: { type: DataTypes.DECIMAL(12, 2), defaultValue: 0 },
+  vendor_earning: { type: DataTypes.DECIMAL(12, 2), defaultValue: 0 },
+  remaining_amount: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
+  remaining_due_at: { type: DataTypes.DATE },
+  status: {
+    type: DataTypes.ENUM("advance_paid", "vendor_confirmed", "rejected", "remaining_due", "fully_paid", "completed", "cancelled", "expired"),
+    defaultValue: "advance_paid",
+  },
+  created_by_admin_id: { type: DataTypes.BIGINT.UNSIGNED },
+  approved_by_admin_id: { type: DataTypes.BIGINT.UNSIGNED },
+}, { tableName: "bookings" })
