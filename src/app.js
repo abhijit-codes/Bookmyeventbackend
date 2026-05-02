@@ -43,6 +43,9 @@ app.use(
     legacyHeaders: false,
   }),
 )
+app.get("/", (_req, res) => {
+  res.send("BookMyEvent API running 🚀")
+})
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", service: "BookMyEvent API" })
