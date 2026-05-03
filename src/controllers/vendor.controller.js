@@ -135,6 +135,52 @@ export const addService = asyncHandler(async (req, res) => {
   res.status(201).json({ success: true, data: service })
 })
 
+export const updateService = asyncHandler(async (req, res) => {
+  const service = await VendorService.findOne({ where: { id: req.params.id, vendor_id: req.auth.id } })
+  if (!service) throw new AppError("Service not found", 404)
+
+  const files = req.files ?? []
+  const images = files.length
+    ? await Promise.all(files.map((file) => uploadImageBuffer(file, `book-my-event/services/${req.auth.id}`)))
+    : service.images
+
+  await service.update({
+    category_id: req.body.categoryId,
+    title: req.body.title,
+    description: req.body.description,
+    price: req.body.price,
+    city: req.body.city,
+    latitude: req.body.latitude,
+    longitude: req.body.longitude,
+    availability: req.body.availability,
+    images,
+  })
+
+  res.json({ success: true, data: service, message: "Service updated successfully" })
+})
+
+export const deleteService = asyncHandler(async (req, res) => {
+  const service = await VendorService.findOne({ where: { id: req.params.id, vendor_id: req.auth.id } })
+  if (!service) throw new AppError("Service not found", 404)
+
+  const activeBooking = await Booking.findOne({
+    where: {
+      vendor_id: req.auth.id,
+      vendor_service_id: service.id,
+      status: { [Op.in]: ["advance_paid", "vendor_confirmed", "fully_paid"] },
+    },
+  })
+
+  if (activeBooking) {
+    await service.update({ is_active: false })
+    res.json({ success: true, message: "Service has active bookings, so it was hidden instead of deleted." })
+    return
+  }
+
+  await service.destroy()
+  res.json({ success: true, message: "Service deleted successfully" })
+})
+
 export const addBankAccount = asyncHandler(async (req, res) => {
   const accountNumber = String(req.body.accountNumber).trim()
   const ifsc = String(req.body.ifsc).trim().toUpperCase()
@@ -166,6 +212,43 @@ export const addBankAccount = asyncHandler(async (req, res) => {
 
   res.status(201).json({
     success: true,
+    message: "Bank details saved successfully.",
+    data: {
+      id: bankAccount.id,
+      accountHolderName: bankAccount.account_holder_name,
+      accountNumberLast4: bankAccount.account_number_last4,
+      ifsc: bankAccount.ifsc,
+      bankName: bankAccount.bank_name,
+      isVerified: bankAccount.is_verified,
+    },
+  })
+})
+
+export const updateBankAccount = asyncHandler(async (req, res) => {
+  const bankAccount = await BankAccount.findOne({ where: { id: req.params.id, vendor_id: req.auth.id } })
+  if (!bankAccount) throw new AppError("Bank account not found", 404)
+
+  const accountNumber = String(req.body.accountNumber).trim()
+  const ifsc = String(req.body.ifsc).trim().toUpperCase()
+  const validation = await validateBankAccount({
+    accountHolderName: req.body.accountHolderName,
+    accountNumber,
+    ifsc,
+  })
+  if (!validation.verified) throw new AppError("Bank account could not be verified", 422)
+
+  await bankAccount.update({
+    account_holder_name: req.body.accountHolderName,
+    encrypted_account_number: encryptText(accountNumber),
+    account_number_last4: accountNumber.slice(-4),
+    ifsc,
+    bank_name: req.body.bankName,
+    is_verified: validation.verified,
+  })
+
+  res.json({
+    success: true,
+    message: "Bank details updated successfully.",
     data: {
       id: bankAccount.id,
       accountHolderName: bankAccount.account_holder_name,

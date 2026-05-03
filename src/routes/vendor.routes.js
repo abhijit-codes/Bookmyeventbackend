@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { addBankAccount, addService, getVendor, getVendorDashboard, listVendorBookings, listVendors, sendSupportMessage, updateVendorProfile, updateVendorProfileImage } from "../controllers/vendor.controller.js"
+import { addBankAccount, addService, deleteService, getVendor, getVendorDashboard, listVendorBookings, listVendors, sendSupportMessage, updateBankAccount, updateService, updateVendorProfile, updateVendorProfileImage } from "../controllers/vendor.controller.js"
 import { authenticate, authorize } from "../middlewares/auth.middleware.js"
 import { upload } from "../middlewares/upload.middleware.js"
 import { validate } from "../middlewares/validate.middleware.js"
@@ -22,6 +22,16 @@ router.post(
   validate(serviceSchema),
   addService,
 )
+router.patch(
+  "/services/:id",
+  authenticate,
+  authorize("vendor"),
+  upload.array("images", 8),
+  validate(serviceSchema),
+  updateService,
+)
+router.delete("/services/:id", authenticate, authorize("vendor"), deleteService)
 router.post("/bank-accounts", authenticate, authorize("vendor"), validate(bankAccountSchema), addBankAccount)
+router.put("/bank-accounts/:id", authenticate, authorize("vendor"), validate(bankAccountSchema), updateBankAccount)
 
 export default router

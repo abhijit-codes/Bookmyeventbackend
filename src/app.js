@@ -20,7 +20,19 @@ app.use(
     crossOriginResourcePolicy: { policy: "cross-origin" },
   }),
 )
-app.use(cors({ origin: config.clientUrl, credentials: true }))
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || config.corsOrigins.includes(origin)) {
+        callback(null, true)
+        return
+      }
+
+      callback(new Error(`CORS blocked origin: ${origin}`))
+    },
+    credentials: true,
+  }),
+)
 app.use(compression())
 app.use(express.json({ limit: "2mb" }))
 app.use(express.urlencoded({ extended: true }))
