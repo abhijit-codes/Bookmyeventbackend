@@ -13,7 +13,6 @@ router.get("/dashboard/bookings", authenticate, authorize("vendor"), listVendorB
 router.patch("/profile", authenticate, authorize("vendor"), updateVendorProfile)
 router.patch("/profile/image", authenticate, authorize("vendor"), upload.single("profileImage"), updateVendorProfileImage)
 router.post("/support-message", authenticate, authorize("vendor"), sendSupportMessage)
-router.get("/:id", getVendor)
 router.post(
   "/services",
   authenticate,
@@ -33,5 +32,6 @@ router.patch(
 router.delete("/services/:id", authenticate, authorize("vendor"), deleteService)
 router.post("/bank-accounts", authenticate, authorize("vendor"), validate(bankAccountSchema), addBankAccount)
 router.put("/bank-accounts/:id", authenticate, authorize("vendor"), validate(bankAccountSchema), updateBankAccount)
+router.get("/:id", getVendor)
 
 export default router
